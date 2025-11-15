@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { supabase, hasSupabaseConfig } from '../lib/supabase'
+import { apiClient } from '../lib/api'
 
 function Dashboard() {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [tableName, setTableName] = useState('')
+  const [stats, setStats] = useState(null)
+  const [showStats, setShowStats] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -17,29 +19,31 @@ function Dashboard() {
       return
     }
 
-    if (!hasSupabaseConfig || !supabase) {
-      setError('Supabase configuration is missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.')
-      setLoading(false)
-      return
-    }
-
     try {
       setLoading(true)
       setError(null)
       
-      const { data: fetchedData, error: fetchError } = await supabase
-        .from(tableName)
-        .select('*')
-        .limit(100)
-
-      if (fetchError) throw fetchError
-
-      setData(fetchedData || [])
+      const response = await apiClient.getTableData(tableName, 100, 0)
+      setData(response.data || [])
     } catch (err) {
       setError(err.message)
       console.error('Error fetching data:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchStats = async () => {
+    if (!tableName) return
+
+    try {
+      setError(null)
+      const response = await apiClient.getTableStats(tableName)
+      setStats(response)
+      setShowStats(true)
+    } catch (err) {
+      setError(err.message)
+      console.error('Error fetching stats:', err)
     }
   }
 
@@ -59,19 +63,13 @@ function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Supabase Config Warning */}
-        {!hasSupabaseConfig && (
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6">
-            <p className="font-medium">⚠️ Supabase Configuration Required</p>
-            <p className="text-sm mt-1">
-              Please create a <code className="bg-yellow-100 px-1 rounded">.env</code> file in the <code className="bg-yellow-100 px-1 rounded">frontend</code> directory with:
-            </p>
-            <pre className="mt-2 text-xs bg-yellow-100 p-2 rounded overflow-x-auto">
-{`VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`}
-            </pre>
-          </div>
-        )}
+        {/* Backend Connection Warning */}
+        <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-6">
+          <p className="font-medium">ℹ️ Using Backend API</p>
+          <p className="text-sm mt-1">
+            Data is fetched through the backend server. Make sure the backend is running on <code className="bg-blue-100 px-1 rounded">http://localhost:3001</code>
+          </p>
+        </div>
         
         {/* Table Selector */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -86,6 +84,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`}
               onChange={handleTableChange}
               placeholder="Enter table name (e.g., 'users', 'products')"
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              onKeyPress={(e) => e.key === 'Enter' && fetchData()}
             />
             <button
               onClick={fetchData}
@@ -93,6 +92,13 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? 'Loading...' : 'Refresh'}
+            </button>
+            <button
+              onClick={fetchStats}
+              disabled={loading || !tableName}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            >
+              Stats
             </button>
           </div>
         </div>
@@ -102,6 +108,58 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`}
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
             <p className="font-medium">Error:</p>
             <p className="text-sm">{error}</p>
+            <p className="text-xs mt-2 text-red-600">
+              Make sure the backend server is running: <code className="bg-red-100 px-1 rounded">cd backend && npm run dev</code>
+            </p>
+          </div>
+        )}
+
+        {/* Statistics Panel */}
+        {showStats && stats && (
+          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Statistics for: <span className="text-blue-600">{stats.table}</span>
+              </h2>
+              <button
+                onClick={() => setShowStats(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Total Rows</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalRows}</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Columns</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.columns.length}</p>
+              </div>
+            </div>
+            <div className="mt-4 space-y-2">
+              <h3 className="font-medium text-gray-900">Column Statistics:</h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {Object.entries(stats.statistics).map(([column, stat]) => (
+                  <div key={column} className="border border-gray-200 rounded p-3">
+                    <p className="font-medium text-gray-900">{column}</p>
+                    {stat.type === 'numeric' && (
+                      <div className="text-sm text-gray-600 mt-1 space-y-1">
+                        <p>Average: {stat.average.toFixed(2)}</p>
+                        <p>Min: {stat.min} | Max: {stat.max} | Median: {stat.median.toFixed(2)}</p>
+                      </div>
+                    )}
+                    {stat.type === 'categorical' && (
+                      <div className="text-sm text-gray-600 mt-1">
+                        <p>Unique values: {stat.uniqueCount}</p>
+                        {stat.mostCommon && <p>Most common: {stat.mostCommon}</p>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
