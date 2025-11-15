@@ -5,9 +5,7 @@ import App from './App.jsx'
 import { BusinessProvider } from './lib/businessContext.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BusinessProvider>
-      <App />
-    </BusinessProvider>
-  </StrictMode>,
+  <BusinessProvider>
+    <App />
+  </BusinessProvider>
 )

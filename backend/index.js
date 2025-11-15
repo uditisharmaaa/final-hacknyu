@@ -4,6 +4,7 @@ import { handleIncomingCall, processSpeech } from "./services/twilio.js";
 import { getStoredAudio, cleanupExpiredAudio } from "./services/elevenlabs.js";
 import { EngagementAgent } from "./services/engagementAgent.js";
 import { CampaignService } from "./services/campaignService.js";
+import { CrossReferenceAgent } from "./services/crossReferenceAgent.js";
 
 const app = express();
 
@@ -43,6 +44,96 @@ app.get("/api/engagement-agent/:businessId", async (req, res) => {
     console.error("Engagement Agent API error:", error);
     res.status(500).json({ 
       error: "Failed to analyze customer engagement",
+      message: error.message 
+    });
+  }
+});
+
+// Cross Reference Agent API endpoint - Find similar businesses
+app.get("/api/cross-reference/:businessId", async (req, res) => {
+  try {
+    const businessId = parseInt(req.params.businessId);
+    
+    if (!businessId || isNaN(businessId)) {
+      return res.status(400).json({ error: "Invalid business ID" });
+    }
+
+    const agent = new CrossReferenceAgent(businessId);
+    const result = await agent.findSimilarBusinesses();
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Cross Reference Agent API error:", error);
+    res.status(500).json({ 
+      error: "Failed to find similar businesses",
+      message: error.message 
+    });
+  }
+});
+
+// Create partnership endpoint
+app.post("/api/cross-reference/:businessId/partnership", async (req, res) => {
+  try {
+    const businessId = parseInt(req.params.businessId);
+    const { otherBusinessId } = req.body;
+    
+    if (!businessId || isNaN(businessId) || !otherBusinessId) {
+      return res.status(400).json({ error: "Invalid business IDs" });
+    }
+
+    const agent = new CrossReferenceAgent(businessId);
+    const result = await agent.createPartnership(otherBusinessId);
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Create partnership error:", error);
+    res.status(500).json({ 
+      error: "Failed to create partnership",
+      message: error.message 
+    });
+  }
+});
+
+// Deactivate partnership endpoint
+app.post("/api/cross-reference/:businessId/partnership/:partnershipId/deactivate", async (req, res) => {
+  try {
+    const businessId = parseInt(req.params.businessId);
+    const partnershipId = parseInt(req.params.partnershipId);
+    
+    if (!businessId || isNaN(businessId) || !partnershipId) {
+      return res.status(400).json({ error: "Invalid IDs" });
+    }
+
+    const agent = new CrossReferenceAgent(businessId);
+    const result = await agent.deactivatePartnership(partnershipId);
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Deactivate partnership error:", error);
+    res.status(500).json({ 
+      error: "Failed to deactivate partnership",
+      message: error.message 
+    });
+  }
+});
+
+// Get active partnerships endpoint
+app.get("/api/cross-reference/:businessId/partnerships", async (req, res) => {
+  try {
+    const businessId = parseInt(req.params.businessId);
+    
+    if (!businessId || isNaN(businessId)) {
+      return res.status(400).json({ error: "Invalid business ID" });
+    }
+
+    const agent = new CrossReferenceAgent(businessId);
+    const partnerships = await agent.getActivePartnerships();
+    
+    res.json({ partnerships });
+  } catch (error) {
+    console.error("Get partnerships error:", error);
+    res.status(500).json({ 
+      error: "Failed to get partnerships",
       message: error.message 
     });
   }

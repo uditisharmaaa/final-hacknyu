@@ -40,9 +40,9 @@ export default function EngagementAgent({ businessId }) {
 
     fetchAgentData()
     
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchAgentData, 5 * 60 * 1000)
-    return () => clearInterval(interval)
+    // Periodic refresh disabled for demo
+    // const interval = setInterval(fetchAgentData, 5 * 60 * 1000)
+    // return () => clearInterval(interval)
   }, [businessId])
 
   const getRecommendationIcon = (type) => {

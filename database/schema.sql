@@ -55,6 +55,34 @@ CREATE TABLE campaigns (
     created_at         TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Businesses
+CREATE TABLE businesses (
+    id                  BIGSERIAL PRIMARY KEY,
+    name                TEXT NOT NULL,
+    industry            TEXT,
+    location            TEXT,
+    auth_user_id        TEXT,                             -- Optional: link to auth.users
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Business Partnerships (for cross-promotion)
+CREATE TABLE business_partnerships (
+    id                  BIGSERIAL PRIMARY KEY,
+    business_id_1       BIGINT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    business_id_2       BIGINT NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+    status              TEXT NOT NULL DEFAULT 'active',   -- 'active' or 'inactive'
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(business_id_1, business_id_2),
+    CHECK (business_id_1 != business_id_2)
+);
+
+-- Add business_id to existing tables
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS business_id BIGINT REFERENCES businesses(id) ON DELETE CASCADE;
+ALTER TABLE services ADD COLUMN IF NOT EXISTS business_id BIGINT REFERENCES businesses(id) ON DELETE CASCADE;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS business_id BIGINT REFERENCES businesses(id) ON DELETE CASCADE;
+ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS business_id BIGINT REFERENCES businesses(id) ON DELETE CASCADE;
+
 -- Optional: Sample data for testing
 -- Uncomment the following to insert sample data
 

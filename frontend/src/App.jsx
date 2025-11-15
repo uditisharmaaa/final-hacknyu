@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import { Users, Calendar, DollarSign, Activity, Phone, Building2, ChevronDown, Brain, Zap } from 'lucide-react'
+import { Users, Calendar, DollarSign, Activity, Phone, Building2, ChevronDown, Brain, Zap, LayoutDashboard, Network } from 'lucide-react'
 import StatCard from './components/StatCard'
 import TodayView from './components/TodayView'
 import CustomersTable from './components/CustomersTable'
 import DemandRevenue from './components/DemandRevenue'
 import AutomationSettings from './components/AutomationSettings'
 import EngagementAgent from './components/EngagementAgent'
+import CrossReferenceAgent from './components/CrossReferenceAgent'
+import CampaignsManager from './components/CampaignsManager'
 import { useBusiness } from './lib/businessContext.jsx'
 import { getDashboardStats, getBookings, getCustomers, getServices, getAllBusinesses } from './services/dataService'
 
@@ -20,6 +22,7 @@ function App() {
   const [error, setError] = useState(null)
   const [showBusinessSelector, setShowBusinessSelector] = useState(false)
   const [showCampaigns, setShowCampaigns] = useState(false)
+  const [activeTab, setActiveTab] = useState('dashboard') // 'dashboard', 'engagement', 'cross-reference'
   const businessSelectorRef = useRef(null)
 
   // Close business selector when clicking outside
@@ -74,9 +77,9 @@ function App() {
 
     fetchData()
     
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchData, 30000)
-    return () => clearInterval(interval)
+    // Periodic refresh disabled for demo
+    // const interval = setInterval(fetchData, 30000)
+    // return () => clearInterval(interval)
   }, [currentBusiness])
 
   if (businessLoading || loading) {
@@ -120,7 +123,7 @@ function App() {
       {/* Compact Header */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex-1">
               <h1 className="text-2xl font-bold text-gray-900">AI Business Assistant</h1>
               <p className="text-sm text-gray-600 mt-0.5">Voice receptionist & CRM dashboard</p>
@@ -166,99 +169,130 @@ function App() {
                 <Phone className="w-4 h-4 text-primary-600" />
                 <span>Receptionist Active</span>
               </div>
-              <button
-                onClick={() => setShowCampaigns(true)}
-                className="flex items-center space-x-2 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
-              >
-                <Zap className="w-4 h-4" />
-                <span>Campaigns</span>
-              </button>
             </div>
+          </div>
+          
+          {/* Tab Navigation */}
+          <div className="flex items-center space-x-1 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'dashboard'
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <LayoutDashboard className="w-4 h-4" />
+              <span>Dashboard</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('engagement')}
+              className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'engagement'
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Brain className="w-4 h-4" />
+              <span>Engagement Agent</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('cross-reference')}
+              className={`flex items-center space-x-2 px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'cross-reference'
+                  ? 'text-primary-600 border-b-2 border-primary-600'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Network className="w-4 h-4" />
+              <span>Cross Reference Agent</span>
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content - Compact Layout */}
+      {/* Main Content - Tab-based Layout */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Quick Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            title="Today's Bookings"
-            value={stats?.todayBookings || 0}
-            icon={Calendar}
-            color="blue"
-          />
-          <StatCard
-            title="Total Revenue"
-            value={`$${parseFloat(stats?.revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
-            icon={DollarSign}
-            color="green"
-          />
-          <StatCard
-            title="Total Customers"
-            value={stats?.customers || 0}
-            icon={Users}
-            color="purple"
-          />
-          <StatCard
-            title="Recent (7 days)"
-            value={stats?.recentBookings || 0}
-            icon={Activity}
-            color="orange"
-          />
-        </div>
-
-        {/* Main Dashboard Grid - Compact */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          {/* Today's Appointments - Takes 2 columns */}
-          <div className="lg:col-span-2">
-            <TodayView bookings={bookings} />
-          </div>
-
-          {/* Automation Settings - Takes 1 column */}
-          <div>
-            <AutomationSettings services={services} />
-          </div>
-        </div>
-
-        {/* Secondary Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          {/* Customers Table */}
-          <div>
-            <CustomersTable customers={customers} bookings={bookings} />
-          </div>
-
-          {/* Demand & Revenue */}
-          <div>
-            <DemandRevenue bookings={bookings} stats={stats} />
-          </div>
-        </div>
-
-        {/* AI Agents Section */}
-        <div className="mb-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Brain className="w-5 h-5 text-primary-600" />
-            <h2 className="text-xl font-bold text-gray-900">AI Agents</h2>
-            <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">Active</span>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Engagement Agent */}
-            <EngagementAgent businessId={currentBusiness?.id} />
-            
-            {/* Placeholder for future agents */}
-            <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center justify-center">
-              <p className="text-sm text-gray-500">More AI agents coming soon...</p>
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <>
+            {/* Quick Stats Row */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <StatCard
+                title="Today's Bookings"
+                value={stats?.todayBookings || 0}
+                icon={Calendar}
+                color="blue"
+              />
+              <StatCard
+                title="Total Revenue"
+                value={`$${parseFloat(stats?.revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+                icon={DollarSign}
+                color="green"
+              />
+              <StatCard
+                title="Total Customers"
+                value={stats?.customers || 0}
+                icon={Users}
+                color="purple"
+              />
+              <StatCard
+                title="Recent (7 days)"
+                value={stats?.recentBookings || 0}
+                icon={Activity}
+                color="orange"
+              />
             </div>
-          </div>
-        </div>
 
-        {/* Campaigns Section */}
-        {showCampaigns && (
-          <div className="mb-6">
-            <CampaignsManager 
-              businessId={currentBusiness?.id} 
-              onClose={() => setShowCampaigns(false)}
-            />
+            {/* Main Dashboard Grid - Compact */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              {/* Today's Appointments - Takes 2 columns */}
+              <div className="lg:col-span-2">
+                <TodayView bookings={bookings} />
+              </div>
+
+              {/* Automation Settings - Takes 1 column */}
+              <div>
+                <AutomationSettings services={services} />
+              </div>
+            </div>
+
+            {/* Secondary Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Customers Table */}
+              <div>
+                <CustomersTable customers={customers} bookings={bookings} />
+              </div>
+
+              {/* Demand & Revenue */}
+              <div>
+                <DemandRevenue bookings={bookings} stats={stats} />
+              </div>
+            </div>
+
+            {/* Campaigns Section */}
+            {showCampaigns && (
+              <div className="mb-6">
+                <CampaignsManager 
+                  businessId={currentBusiness?.id} 
+                  onClose={() => setShowCampaigns(false)}
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Engagement Agent Tab */}
+        {activeTab === 'engagement' && (
+          <div className="max-w-5xl mx-auto">
+            <EngagementAgent businessId={currentBusiness?.id} />
+          </div>
+        )}
+
+        {/* Cross Reference Agent Tab */}
+        {activeTab === 'cross-reference' && (
+          <div className="max-w-5xl mx-auto">
+            <CrossReferenceAgent businessId={currentBusiness?.id} />
           </div>
         )}
       </main>

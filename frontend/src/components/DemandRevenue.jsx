@@ -2,10 +2,15 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { DollarSign, TrendingDown, TrendingUp, Calendar } from 'lucide-react'
 import { format, subDays, startOfDay, isAfter, isBefore } from 'date-fns'
 
-export default function DemandRevenue({ bookings, stats }) {
+export default function DemandRevenue({ bookings = [], stats }) {
   // Get last 30 days of historical data
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  
+  // Ensure bookings is an array
+  if (!Array.isArray(bookings)) {
+    bookings = []
+  }
   
   // Create array of last 30 days
   const historicalDays = []
@@ -44,30 +49,40 @@ export default function DemandRevenue({ bookings, stats }) {
 
   // Count bookings and revenue for all days (historical + upcoming)
   bookings?.forEach(booking => {
+    if (!booking.start_time) return
+    
     const bookingDate = new Date(booking.start_time)
+    if (isNaN(bookingDate.getTime())) return // Invalid date
+    
     bookingDate.setHours(0, 0, 0, 0)
+    const bookingDateStr = bookingDate.toISOString().split('T')[0]
     
     allDays.forEach(day => {
       const dayDate = new Date(day.date)
       dayDate.setHours(0, 0, 0, 0)
+      const dayDateStr = dayDate.toISOString().split('T')[0]
       
-      if (dayDate.getTime() === bookingDate.getTime() && booking.status !== 'cancelled') {
+      // Compare dates as strings to avoid timezone issues
+      if (dayDateStr === bookingDateStr && booking.status !== 'cancelled') {
         day.bookings++
-        if (booking.status === 'completed' || booking.status === 'booked') {
-          day.revenue += booking.services?.price || 0
+        // Only count completed bookings as revenue (they've been paid)
+        if (booking.status === 'completed') {
+          const price = booking.services?.price || booking.service_price || 0
+          day.revenue += parseFloat(price) || 0
         }
       }
     })
   })
 
-  // Calculate statistics from historical data only
-  const historicalData = historicalDays.filter(d => d.isPast)
-  const historicalBookings = historicalData.map(d => d.bookings)
-  const historicalRevenue = historicalData.map(d => d.revenue)
+  // Calculate statistics from all 30 historical days (including today)
+  const historicalBookings = historicalDays.map(d => d.bookings)
+  const historicalRevenue = historicalDays.map(d => d.revenue)
   
-  const avgBookings = historicalBookings.reduce((sum, b) => sum + b, 0) / historicalBookings.length || 0
-  const avgRevenue = historicalRevenue.reduce((sum, r) => sum + r, 0) / historicalRevenue.length || 0
+  const totalBookings = historicalBookings.reduce((sum, b) => sum + b, 0)
   const totalRevenue = historicalRevenue.reduce((sum, r) => sum + r, 0)
+  
+  const avgBookings = historicalDays.length > 0 ? totalBookings / historicalDays.length : 0
+  const avgRevenue = historicalDays.length > 0 ? totalRevenue / historicalDays.length : 0
   
   // Low demand detection for upcoming days
   const lowDemandThreshold = avgBookings * 0.5
@@ -78,6 +93,23 @@ export default function DemandRevenue({ bookings, stats }) {
 
   // Prepare chart data - show last 14 days + next 7 days for better visibility
   const chartData = [...historicalDays.slice(-14), ...upcomingDays]
+  
+  // Ensure chartData is valid
+  if (!chartData || chartData.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <DollarSign className="w-5 h-5 text-primary-600" />
+            <h2 className="text-lg font-semibold text-gray-900">Demand & Revenue</h2>
+          </div>
+        </div>
+        <div className="text-center py-8 text-gray-500">
+          <p>No data available</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -101,8 +133,17 @@ export default function DemandRevenue({ bookings, stats }) {
             tick={{ fontSize: 10 }}
             interval="preserveStartEnd"
           />
-          <YAxis yAxisId="left" tick={{ fontSize: 10 }} />
-          <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} />
+          <YAxis 
+            yAxisId="left" 
+            tick={{ fontSize: 10 }} 
+            label={{ value: 'Bookings', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle' } }}
+          />
+          <YAxis 
+            yAxisId="right" 
+            orientation="right" 
+            tick={{ fontSize: 10 }}
+            label={{ value: 'Revenue ($)', angle: 90, position: 'insideRight', style: { textAnchor: 'middle' } }}
+          />
           <Tooltip
             formatter={(value, name) => [
               name === 'bookings' ? `${value} bookings` : `$${parseFloat(value).toFixed(2)}`,
@@ -178,14 +219,19 @@ export default function DemandRevenue({ bookings, stats }) {
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">Last 7 days avg:</span>
             <span className="font-medium text-gray-700">
-              {historicalDays.slice(-7).reduce((sum, d) => sum + d.revenue, 0) / 7 > avgRevenue ? (
-                <span className="text-green-600 flex items-center">
-                  <TrendingUp className="w-3 h-3 mr-1" />
-                  Trending up
-                </span>
-              ) : (
-                <span className="text-gray-600">Steady</span>
-              )}
+              {(() => {
+                const last7Days = historicalDays.slice(-7)
+                const last7Revenue = last7Days.reduce((sum, d) => sum + d.revenue, 0)
+                const last7Avg = last7Days.length > 0 ? last7Revenue / last7Days.length : 0
+                return last7Avg > avgRevenue ? (
+                  <span className="text-green-600 flex items-center">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    Trending up
+                  </span>
+                ) : (
+                  <span className="text-gray-600">Steady</span>
+                )
+              })()}
             </span>
           </div>
         </div>
