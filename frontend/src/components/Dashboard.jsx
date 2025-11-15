@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, hasSupabaseConfig } from '../lib/supabase'
 
 function Dashboard() {
   const [data, setData] = useState([])
@@ -13,6 +13,12 @@ function Dashboard() {
 
   const fetchData = async () => {
     if (!tableName) {
+      setLoading(false)
+      return
+    }
+
+    if (!hasSupabaseConfig || !supabase) {
+      setError('Supabase configuration is missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.')
       setLoading(false)
       return
     }
@@ -53,6 +59,20 @@ function Dashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Supabase Config Warning */}
+        {!hasSupabaseConfig && (
+          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg mb-6">
+            <p className="font-medium">⚠️ Supabase Configuration Required</p>
+            <p className="text-sm mt-1">
+              Please create a <code className="bg-yellow-100 px-1 rounded">.env</code> file in the <code className="bg-yellow-100 px-1 rounded">frontend</code> directory with:
+            </p>
+            <pre className="mt-2 text-xs bg-yellow-100 p-2 rounded overflow-x-auto">
+{`VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key`}
+            </pre>
+          </div>
+        )}
+        
         {/* Table Selector */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <label htmlFor="table-select" className="block text-sm font-medium text-gray-700 mb-2">
