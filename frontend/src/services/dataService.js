@@ -1,35 +1,48 @@
 import { supabase } from '../lib/supabase'
 
-// Fetch all customers
-export async function getCustomers() {
+// Fetch customers for a specific business
+export async function getCustomers(businessId) {
+  if (!businessId) return []
+  
   const { data, error } = await supabase
     .from('customers')
     .select('*')
+    .eq('business_id', businessId)
     .order('created_at', { ascending: false })
   
   if (error) throw error
   return data || []
 }
 
-// Fetch all services
-export async function getServices() {
+// Fetch services for a specific business
+export async function getServices(businessId) {
+  if (!businessId) return []
+  
   const { data, error } = await supabase
     .from('services')
     .select('*')
+    .eq('business_id', businessId)
     .order('created_at', { ascending: false })
   
   if (error) throw error
   return data || []
 }
 
-// Fetch all bookings with related data
-export async function getBookings() {
+// Fetch bookings for a specific business with related data
+export async function getBookings(businessId) {
+  if (!businessId) return []
+  
   const { data: bookingsData, error: bookingsError } = await supabase
     .from('bookings')
     .select('*')
+    .eq('business_id', businessId)
     .order('start_time', { ascending: false })
   
   if (bookingsError) throw bookingsError
+
+  if (!bookingsData || bookingsData.length === 0) {
+    return []
+  }
 
   // Fetch related customer and service data
   const customerIds = [...new Set(bookingsData.map(b => b.customer_id))]
@@ -39,11 +52,13 @@ export async function getBookings() {
     .from('customers')
     .select('*')
     .in('id', customerIds)
+    .eq('business_id', businessId)
 
   const { data: servicesData } = await supabase
     .from('services')
     .select('*')
     .in('id', serviceIds)
+    .eq('business_id', businessId)
 
   // Map related data to bookings
   const customersMap = new Map(customersData?.map(c => [c.id, c]) || [])
@@ -56,24 +71,44 @@ export async function getBookings() {
   })) || []
 }
 
-// Fetch all campaigns
-export async function getCampaigns() {
+// Fetch campaigns for a specific business
+export async function getCampaigns(businessId) {
+  if (!businessId) return []
+  
   const { data, error } = await supabase
     .from('campaigns')
     .select('*')
+    .eq('business_id', businessId)
     .order('created_at', { ascending: false })
   
   if (error) throw error
   return data || []
 }
 
-// Get dashboard statistics
-export async function getDashboardStats() {
+// Get dashboard statistics for a specific business
+export async function getDashboardStats(businessId) {
+  if (!businessId) {
+    return {
+      customers: 0,
+      services: 0,
+      bookings: 0,
+      campaigns: 0,
+      revenue: '0.00',
+      recentBookings: 0,
+      todayBookings: 0,
+      bookingsByStatus: {},
+      bookingsByChannel: {},
+      monthlyRevenue: {},
+      topServices: [],
+      genderDistribution: {}
+    }
+  }
+
   const [customers, services, bookings, campaigns] = await Promise.all([
-    getCustomers(),
-    getServices(),
-    getBookings(),
-    getCampaigns()
+    getCustomers(businessId),
+    getServices(businessId),
+    getBookings(businessId),
+    getCampaigns(businessId)
   ])
 
   // Calculate revenue from completed bookings
@@ -106,7 +141,11 @@ export async function getDashboardStats() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const todayBookings = bookings.filter(
-    booking => new Date(booking.start_time) >= today
+    booking => {
+      const bookingDate = new Date(booking.start_time)
+      bookingDate.setHours(0, 0, 0, 0)
+      return bookingDate.getTime() === today.getTime() && booking.status !== 'cancelled'
+    }
   )
 
   // Revenue by month (last 6 months)
@@ -157,4 +196,15 @@ export async function getDashboardStats() {
     topServices,
     genderDistribution
   }
+}
+
+// Fetch all businesses (for demo/selection)
+export async function getAllBusinesses() {
+  const { data, error } = await supabase
+    .from('businesses')
+    .select('*')
+    .order('name', { ascending: true })
+  
+  if (error) throw error
+  return data || []
 }
