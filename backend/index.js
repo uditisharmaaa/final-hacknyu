@@ -24,9 +24,147 @@ app.get("/health", (_, res) => {
   res.json({ status: "ok" });
 });
 
-// Audio streaming endpoint
+// Engagement Agent API endpoint
+app.get("/api/engagement-agent/:businessId", async (req, res) => {
+  try {
+    const businessId = parseInt(req.params.businessId);
+    
+    if (!businessId || isNaN(businessId)) {
+      return res.status(400).json({ error: "Invalid business ID" });
+    }
+
+    const agent = new EngagementAgent(businessId);
+    const result = await agent.analyzeAndRecommend();
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Engagement Agent API error:", error);
+    res.status(500).json({ 
+      error: "Failed to analyze customer engagement",
+      message: error.message 
+    });
+  }
+});
+
+// Generate personalized message API endpoint
+app.post("/api/campaigns/generate-message", async (req, res) => {
+  try {
+    const { businessId, campaignName, discountText, discountCode, customerId, whatsappNumber } = req.body;
+    
+    if (!businessId || !campaignName || !discountText || !discountCode || !customerId) {
+      return res.status(400).json({ 
+        error: "Missing required fields: businessId, campaignName, discountText, discountCode, customerId" 
+      });
+    }
+
+    const campaignService = new CampaignService(businessId);
+    
+    // Get customer data
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      return res.status(500).json({ error: 'Supabase not configured' });
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    const { data: customer, error: customerError } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('id', customerId)
+      .eq('business_id', businessId)
+      .single();
+    
+    if (customerError || !customer) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    // Generate personalized message
+    const messages = await campaignService.generateCampaignMessages(
+      campaignName,
+      discountText,
+      discountCode,
+      [customer],
+      whatsappNumber
+    );
+    
+    res.json({
+      success: true,
+      message: messages[0] || campaignService.generateCampaignMessage(campaignName, discountText, discountCode, whatsappNumber)
+    });
+  } catch (error) {
+    console.error("Generate message error:", error);
+    res.status(500).json({ 
+      error: "Failed to generate message",
+      message: error.message 
+    });
+  }
+});
+
+// Campaign Send API endpoint
+app.post("/api/campaigns/send", async (req, res) => {
+  console.log("Sending campaign to customers");
+  try {
+    const { businessId, campaignId, campaignName, campaignType, campaignValue, discountCode, customerIds, whatsappNumber, customMessages } = req.body;
+    
+    if (!businessId || !campaignId || !customerIds || !Array.isArray(customerIds) || customerIds.length === 0) {
+      return res.status(400).json({ 
+        error: "Missing required fields: businessId, campaignId, customerIds" 
+      });
+    }
+
+    const campaignService = new CampaignService(businessId);
+    const result = await campaignService.sendCampaign({
+      campaignId,
+      campaignName,
+      campaignType,
+      campaignValue,
+      discountCode,
+      customerIds,
+      whatsappNumber,
+      customMessages // Optional: array of custom messages, one per customer
+    });
+    
+    res.json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error("Campaign send error:", error);
+    res.status(500).json({ 
+      error: "Failed to send campaign",
+      message: error.message 
+    });
+  }
+});
+
+// Get eligible customers for a campaign
+app.get("/api/campaigns/:campaignId/customers/:businessId", async (req, res) => {
+  try {
+    const campaignId = parseInt(req.params.campaignId);
+    const businessId = parseInt(req.params.businessId);
+    
+    if (!campaignId || !businessId || isNaN(campaignId) || isNaN(businessId)) {
+      return res.status(400).json({ error: "Invalid campaign ID or business ID" });
+    }
+
+    const campaignService = new CampaignService(businessId);
+    const result = await campaignService.getEligibleCustomers(campaignId);
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Error getting eligible customers:", error);
+    res.status(500).json({ 
+      error: "Failed to get eligible customers",
+      message: error.message 
+    });
+  }
+});
+
 app.get("/audio/:audioId", (req, res) => {
-  const storedAudio = getStoredAudio(req.params.audioId);
+  const storedAudio = audioStore.get(req.params.audioId);
   if (!storedAudio) {
     return res.status(404).send("Audio not found");
   }
