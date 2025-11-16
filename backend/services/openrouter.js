@@ -1,4 +1,5 @@
 import axios from "axios";
+import { formatInTimeZone } from "date-fns-tz";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MODEL = "gpt-4.1-nano";
@@ -82,9 +83,21 @@ function buildContextualPrompt(appointment = {}) {
   if (appointment.datetime) collected.push("datetime");
   else missing.push("datetime");
 
-  let statusNote = "";
+  // Get current date/time in Eastern Time
+  const now = new Date();
+  const timezone = "America/New_York";
+  const currentDateTime = formatInTimeZone(
+    now,
+    timezone,
+    "EEEE, MMMM d, yyyy 'at' h:mm a zzz"
+  );
+
+  let statusNote = `\n\nCURRENT DATE & TIME: ${currentDateTime}\n`;
+  statusNote +=
+    "IMPORTANT: When users mention relative dates like 'tomorrow', 'next Friday', or 'this Tuesday', calculate the actual date based on the current date above. Always output datetime in ISO 8601 format for the America/New_York timezone.\n";
+
   if (collected.length > 0) {
-    statusNote = `\n\nCURRENT STATUS: Already collected: ${collected.join(
+    statusNote += `\nCURRENT STATUS: Already collected: ${collected.join(
       ", "
     )}. `;
   }
