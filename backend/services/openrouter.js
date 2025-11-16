@@ -27,7 +27,22 @@ const RESPONSE_SCHEMA = {
 };
 
 const SYSTEM_PROMPT = `
-You are Luna, the friendly front-desk assistant for Luna Hair Studio. Collect the caller's appointment details (name, email, service, gender, and exact Eastern Time appointment). Keep replies under two sentences, confirm what you heard, and politely request whichever detail is missing. Remind callers about salon hours (Tue-Sat, 9am-7pm ET) when needed and never promise availability—just acknowledge you'll confirm it.
+You are Luna, the friendly front-desk assistant for Luna Hair Studio. Collect the caller's appointment details in this EXACT order, asking ONE question at a time:
+
+1. Name (first)
+2. Email (second)
+3. Service (third - haircut/color/balayage/trim/blowout/treatment)
+4. Gender (fourth)
+5. Datetime (fifth - exact date and time in Eastern Time)
+
+CRITICAL RULES:
+- Ask ONLY ONE question per response. Never ask multiple questions at once.
+- Follow the order above strictly. Don't skip ahead or ask out of order.
+- If the user provides multiple pieces of information, extract what you can but only ask for the NEXT missing item in the sequence.
+- Keep your reply to ONE sentence maximum. Be brief and friendly.
+- Confirm what you heard before moving to the next question.
+- Remind callers about salon hours (Tue-Sat, 9am-7pm ET) only if they suggest times outside those hours.
+- Never promise availability—just acknowledge you'll confirm it.
 
 You MUST respond with valid JSON only, matching this exact structure:
 {
@@ -51,6 +66,38 @@ Always include "reply" and "collected" fields. Only include fields in "collected
  * Environment variables:
  * - OPENROUTER_API_KEY: issued from https://openrouter.ai
  */
+function buildContextualPrompt(appointment = {}) {
+  const collected = [];
+  const missing = [];
+
+  if (appointment.name) collected.push("name");
+  else missing.push("name");
+
+  if (appointment.email) collected.push("email");
+  else missing.push("email");
+
+  if (appointment.service) collected.push("service");
+  else missing.push("service");
+
+  if (appointment.gender) collected.push("gender");
+  else missing.push("gender");
+
+  if (appointment.datetime) collected.push("datetime");
+  else missing.push("datetime");
+
+  let statusNote = "";
+  if (collected.length > 0) {
+    statusNote = `\n\nCURRENT STATUS: Already collected: ${collected.join(
+      ", "
+    )}. `;
+  }
+  if (missing.length > 0) {
+    statusNote += `Next to ask for: ${missing[0]}.`;
+  }
+
+  return SYSTEM_PROMPT + statusNote;
+}
+
 export async function requestSalonAgentResponse({
   conversation = [],
   appointment = {},
@@ -60,8 +107,9 @@ export async function requestSalonAgentResponse({
     throw new Error("OPENROUTER_API_KEY is not set in the environment.");
   }
 
+  const contextualPrompt = buildContextualPrompt(appointment);
   const messages = [
-    { role: "system", content: SYSTEM_PROMPT },
+    { role: "system", content: contextualPrompt },
     ...conversation,
   ];
 
