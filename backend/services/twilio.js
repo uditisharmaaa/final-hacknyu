@@ -2,6 +2,7 @@ import twilio from "twilio";
 import { generateSpeechUrl } from "./elevenlabs.js";
 import { getOrCreateSession, deleteSession } from "../utils/session.js";
 import { handleAppointmentTurn } from "../utils/intent.js";
+import { sendAppointmentSMS } from "./sms.js";
 
 const VoiceResponse = twilio.twiml.VoiceResponse;
 
@@ -44,6 +45,7 @@ export async function handleIncomingCall(req) {
 export async function processSpeech(req) {
   const callSid = req.body?.CallSid;
   const userSpeech = req.body?.SpeechResult;
+  const callerPhone = req.body?.From;
   const session = getOrCreateSession(callSid);
   const twiml = new VoiceResponse();
 
@@ -57,6 +59,21 @@ export async function processSpeech(req) {
       twiml.play(audioUrl);
       twiml.say("Thank you for calling Luna Hair Studio. Goodbye!");
       twiml.hangup();
+
+      const appointmentDetails =
+        response.formattedAppointment ?? session.appointment;
+      const smsRecipient =
+        callerPhone ||
+        appointmentDetails?.phone ||
+        session.appointment?.phone ||
+        null;
+
+      if (appointmentDetails && smsRecipient) {
+        sendAppointmentSMS(appointmentDetails, smsRecipient).catch((error) => {
+          console.error("Failed to send appointment confirmation SMS:", error);
+        });
+      }
+
       deleteSession(callSid);
     } else {
       const gather = twiml.gather({
