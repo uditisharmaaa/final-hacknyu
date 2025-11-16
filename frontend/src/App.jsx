@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Users, Calendar, DollarSign, Activity, Phone, Building2, ChevronDown, Brain, Zap, LayoutDashboard, Network } from 'lucide-react'
 import StatCard from './components/StatCard'
 import TodayView from './components/TodayView'
@@ -8,10 +9,12 @@ import AutomationSettings from './components/AutomationSettings'
 import EngagementAgent from './components/EngagementAgent'
 import CrossReferenceAgent from './components/CrossReferenceAgent'
 import CampaignsManager from './components/CampaignsManager'
+import LanguageSelector from './components/LanguageSelector'
 import { useBusiness } from './lib/businessContext.jsx'
 import { getDashboardStats, getBookings, getCustomers, getServices, getAllBusinesses } from './services/dataService'
 
 function App() {
+  const { t } = useTranslation()
   const { currentBusiness, loading: businessLoading, switchBusiness, businesses } = useBusiness()
   const [stats, setStats] = useState(null)
   const [bookings, setBookings] = useState([])
@@ -87,7 +90,7 @@ function App() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600">{t('loading.dashboard')}</p>
         </div>
       </div>
     )
@@ -97,10 +100,10 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-          <h2 className="text-xl font-semibold text-red-800 mb-2">Error Loading Dashboard</h2>
+          <h2 className="text-xl font-semibold text-red-800 mb-2">{t('errors.loadingDashboard')}</h2>
           <p className="text-red-600">{error}</p>
           <p className="text-sm text-red-500 mt-4">
-            Please check your Supabase configuration and ensure the database tables are set up correctly.
+            {t('errors.checkConfig')}
           </p>
         </div>
       </div>
@@ -111,8 +114,8 @@ function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-md">
-          <h2 className="text-xl font-semibold text-yellow-800 mb-2">No Business Found</h2>
-          <p className="text-yellow-600">Please set up a business in your Supabase database.</p>
+          <h2 className="text-xl font-semibold text-yellow-800 mb-2">{t('errors.noBusinessFound')}</h2>
+          <p className="text-yellow-600">{t('errors.setupBusiness')}</p>
         </div>
       </div>
     )
@@ -125,10 +128,11 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900">AI Business Assistant</h1>
-              <p className="text-sm text-gray-600 mt-0.5">Voice receptionist & CRM dashboard</p>
+              <h1 className="text-2xl font-bold text-gray-900">{t('header.title')}</h1>
+              <p className="text-sm text-gray-600 mt-0.5">{t('header.subtitle')}</p>
             </div>
             <div className="flex items-center space-x-4">
+              <LanguageSelector />
               {/* Business Selector */}
               {allBusinesses.length > 1 && (
                 <div className="relative" ref={businessSelectorRef}>
@@ -163,11 +167,11 @@ function App() {
               )}
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Live</span>
+                <span>{t('header.live')}</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <Phone className="w-4 h-4 text-primary-600" />
-                <span>Receptionist Active</span>
+                <span>{t('header.receptionistActive')}</span>
               </div>
             </div>
           </div>
@@ -183,7 +187,7 @@ function App() {
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span>Dashboard</span>
+              <span>{t('tabs.dashboard')}</span>
             </button>
             <button
               onClick={() => setActiveTab('engagement')}
@@ -194,7 +198,7 @@ function App() {
               }`}
             >
               <Brain className="w-4 h-4" />
-              <span>Engagement Agent</span>
+              <span>{t('tabs.engagement')}</span>
             </button>
             <button
               onClick={() => setActiveTab('cross-reference')}
@@ -205,7 +209,7 @@ function App() {
               }`}
             >
               <Network className="w-4 h-4" />
-              <span>Cross Reference Agent</span>
+              <span>{t('tabs.crossReference')}</span>
             </button>
           </div>
         </div>
@@ -219,25 +223,25 @@ function App() {
             {/* Quick Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <StatCard
-                title="Today's Bookings"
+                title={t('stats.todayBookings')}
                 value={stats?.todayBookings || 0}
                 icon={Calendar}
                 color="blue"
               />
               <StatCard
-                title="Total Revenue"
+                title={t('stats.totalRevenue')}
                 value={`$${parseFloat(stats?.revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
                 icon={DollarSign}
                 color="green"
               />
               <StatCard
-                title="Total Customers"
+                title={t('stats.totalCustomers')}
                 value={stats?.customers || 0}
                 icon={Users}
                 color="purple"
               />
               <StatCard
-                title="Recent (7 days)"
+                title={t('stats.recentBookings')}
                 value={stats?.recentBookings || 0}
                 icon={Activity}
                 color="orange"
@@ -301,7 +305,7 @@ function App() {
       <footer className="bg-white border-t border-gray-200 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-center text-xs text-gray-500">
-            AI Business Assistant • Built with React, Supabase & OpenRouter
+            {t('footer.text')}
           </p>
         </div>
       </footer>

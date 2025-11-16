@@ -1,0 +1,83 @@
+{
+  "header": {
+    "title": "AI Business Assistant",
+    "subtitle": "Voice receptionist & CRM dashboard",
+    "live": "Live",
+    "receptionistActive": "Receptionist Active"
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "engagement": "Engagement Agent",
+    "crossReference": "Cross Reference Agent"
+  },
+  "stats": {
+    "todayBookings": "Today's Bookings",
+    "totalRevenue": "Total Revenue",
+    "totalCustomers": "Total Customers",
+    "recentBookings": "Recent (7 days)",
+    "totalCalls": "Total Calls",
+    "appointments": "Appointments",
+    "customers": "Customers",
+    "demand": "Demand",
+    "high": "High"
+  },
+  "dashboard": {
+    "title": "DeskMate AI",
+    "subtitle": "Complete automation for small business owners",
+    "getStarted": "Get Started Free",
+    "heroTitle": "Transform Your Business Operations 🚀",
+    "heroSubtitle": "AI-powered call handling, scheduling, and customer management—all in one platform",
+    "automatedCalls": "Automated Calls",
+    "smartScheduling": "Smart Scheduling",
+    "crmIntegration": "CRM Integration",
+    "powerfulFeatures": "Powerful Features",
+    "readyTransform": "Ready to Transform Your Business? ✨",
+    "joinHundreds": "Join hundreds of businesses automating their operations",
+    "startFreeTrial": "Start Free Trial →",
+    "learnMore": "Learn more"
+  },
+  "features": {
+    "aiCallAssistant": {
+      "title": "AI Call Assistant",
+      "description": "Handles incoming calls with natural voice AI powered by ElevenLabs. Collects information and verifies emails automatically."
+    },
+    "smartScheduling": {
+      "title": "Smart Scheduling",
+      "description": "Seamlessly schedules appointments on iCal and sends beautiful email confirmations instantly."
+    },
+    "crmIntegration": {
+      "title": "CRM Integration",
+      "description": "Automatically adds customers to Supabase with full details, service history, and preferences."
+    },
+    "smartFollowups": {
+      "title": "Smart Follow-ups",
+      "description": "AI determines optimal follow-up timing and sends personalized Twilio reminders automatically."
+    },
+    "dynamicDiscounts": {
+      "title": "Dynamic Discounts",
+      "description": "Intelligently sends discount codes during low demand periods to maximize bookings."
+    },
+    "businessInsights": {
+      "title": "Business Insights",
+      "description": "Track demand trends, customer retention, and receive AI-powered growth recommendations."
+    }
+  },
+  "loading": {
+    "dashboard": "Loading dashboard...",
+    "general": "Loading..."
+  },
+  "errors": {
+    "loadingDashboard": "Error Loading Dashboard",
+    "checkConfig": "Please check your Supabase configuration and ensure the database tables are set up correctly.",
+    "noBusinessFound": "No Business Found",
+    "setupBusiness": "Please set up a business in your Supabase database."
+  },
+  "footer": {
+    "text": "AI Business Assistant • Built with React, Supabase & OpenRouter"
+  },
+  "language": {
+    "select": "Select Language",
+    "current": "Current Language"
+  }
+}
+

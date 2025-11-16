@@ -1,0 +1,83 @@
+{
+  "header": {
+    "title": "AI 商业助手",
+    "subtitle": "语音接待员和 CRM 仪表板",
+    "live": "在线",
+    "receptionistActive": "接待员激活"
+  },
+  "tabs": {
+    "dashboard": "仪表板",
+    "engagement": "参与代理",
+    "crossReference": "交叉参考代理"
+  },
+  "stats": {
+    "todayBookings": "今日预订",
+    "totalRevenue": "总收入",
+    "totalCustomers": "总客户",
+    "recentBookings": "最近（7 天）",
+    "totalCalls": "总通话",
+    "appointments": "预约",
+    "customers": "客户",
+    "demand": "需求",
+    "high": "高"
+  },
+  "dashboard": {
+    "title": "DeskMate AI",
+    "subtitle": "为小企业主提供完整自动化",
+    "getStarted": "免费开始",
+    "heroTitle": "转变您的业务运营 🚀",
+    "heroSubtitle": "AI 驱动的通话处理、日程安排和客户管理—全部集中在一个平台",
+    "automatedCalls": "自动通话",
+    "smartScheduling": "智能日程",
+    "crmIntegration": "CRM 集成",
+    "powerfulFeatures": "强大功能",
+    "readyTransform": "准备转变您的业务了吗？✨",
+    "joinHundreds": "加入数百家自动化运营的企业",
+    "startFreeTrial": "开始免费试用 →",
+    "learnMore": "了解更多"
+  },
+  "features": {
+    "aiCallAssistant": {
+      "title": "AI 通话助手",
+      "description": "使用 ElevenLabs 提供的自然语音 AI 处理来电。自动收集信息并验证电子邮件。"
+    },
+    "smartScheduling": {
+      "title": "智能日程安排",
+      "description": "在 iCal 上无缝安排预约，并立即发送精美的电子邮件确认。"
+    },
+    "crmIntegration": {
+      "title": "CRM 集成",
+      "description": "自动将客户添加到 Supabase，包含完整详细信息、服务历史和偏好设置。"
+    },
+    "smartFollowups": {
+      "title": "智能跟进",
+      "description": "AI 确定最佳跟进时间，并自动发送个性化的 Twilio 提醒。"
+    },
+    "dynamicDiscounts": {
+      "title": "动态折扣",
+      "description": "在需求低迷期间智能发送折扣码，以最大化预订量。"
+    },
+    "businessInsights": {
+      "title": "业务洞察",
+      "description": "跟踪需求趋势、客户保留率，并接收 AI 驱动的增长建议。"
+    }
+  },
+  "loading": {
+    "dashboard": "正在加载仪表板...",
+    "general": "加载中..."
+  },
+  "errors": {
+    "loadingDashboard": "加载仪表板时出错",
+    "checkConfig": "请检查您的 Supabase 配置并确保数据库表已正确设置。",
+    "noBusinessFound": "未找到业务",
+    "setupBusiness": "请在您的 Supabase 数据库中设置一个业务。"
+  },
+  "footer": {
+    "text": "AI 商业助手 • 使用 React、Supabase 和 OpenRouter 构建"
+  },
+  "language": {
+    "select": "选择语言",
+    "current": "当前语言"
+  }
+}
+

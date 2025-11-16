@@ -1,0 +1,83 @@
+{
+  "header": {
+    "title": "Assistant Commercial IA",
+    "subtitle": "Réceptionniste vocal et tableau de bord CRM",
+    "live": "En Direct",
+    "receptionistActive": "Réceptionniste Actif"
+  },
+  "tabs": {
+    "dashboard": "Tableau de Bord",
+    "engagement": "Agent d'Engagement",
+    "crossReference": "Agent de Référence Croisée"
+  },
+  "stats": {
+    "todayBookings": "Réservations d'Aujourd'hui",
+    "totalRevenue": "Revenu Total",
+    "totalCustomers": "Clients Totaux",
+    "recentBookings": "Récent (7 jours)",
+    "totalCalls": "Appels Totaux",
+    "appointments": "Rendez-vous",
+    "customers": "Clients",
+    "demand": "Demande",
+    "high": "Élevée"
+  },
+  "dashboard": {
+    "title": "DeskMate IA",
+    "subtitle": "Automatisation complète pour les propriétaires de petites entreprises",
+    "getStarted": "Commencer Gratuitement",
+    "heroTitle": "Transformez les Opérations de Votre Entreprise 🚀",
+    "heroSubtitle": "Gestion d'appels, planification et gestion de clients avec IA—tout sur une seule plateforme",
+    "automatedCalls": "Appels Automatisés",
+    "smartScheduling": "Planification Intelligente",
+    "crmIntegration": "Intégration CRM",
+    "powerfulFeatures": "Fonctionnalités Puissantes",
+    "readyTransform": "Prêt à Transformer Votre Entreprise? ✨",
+    "joinHundreds": "Rejoignez des centaines d'entreprises automatisant leurs opérations",
+    "startFreeTrial": "Commencer l'Essai Gratuit →",
+    "learnMore": "En savoir plus"
+  },
+  "features": {
+    "aiCallAssistant": {
+      "title": "Assistant d'Appel IA",
+      "description": "Gère les appels entrants avec une IA vocale naturelle alimentée par ElevenLabs. Collecte les informations et vérifie les emails automatiquement."
+    },
+    "smartScheduling": {
+      "title": "Planification Intelligente",
+      "description": "Planifie les rendez-vous sur iCal et envoie de belles confirmations par email instantanément."
+    },
+    "crmIntegration": {
+      "title": "Intégration CRM",
+      "description": "Ajoute automatiquement les clients à Supabase avec tous les détails, l'historique des services et les préférences."
+    },
+    "smartFollowups": {
+      "title": "Suivis Intelligents",
+      "description": "L'IA détermine le moment optimal de suivi et envoie des rappels personnalisés Twilio automatiquement."
+    },
+    "dynamicDiscounts": {
+      "title": "Remises Dynamiques",
+      "description": "Envoie intelligemment des codes de réduction pendant les périodes de faible demande pour maximiser les réservations."
+    },
+    "businessInsights": {
+      "title": "Analyses Commerciales",
+      "description": "Suivez les tendances de la demande, la fidélisation des clients et recevez des recommandations de croissance alimentées par l'IA."
+    }
+  },
+  "loading": {
+    "dashboard": "Chargement du tableau de bord...",
+    "general": "Chargement..."
+  },
+  "errors": {
+    "loadingDashboard": "Erreur de Chargement du Tableau de Bord",
+    "checkConfig": "Veuillez vérifier votre configuration Supabase et vous assurer que les tables de base de données sont correctement configurées.",
+    "noBusinessFound": "Aucune Entreprise Trouvée",
+    "setupBusiness": "Veuillez configurer une entreprise dans votre base de données Supabase."
+  },
+  "footer": {
+    "text": "Assistant Commercial IA • Construit avec React, Supabase et OpenRouter"
+  },
+  "language": {
+    "select": "Sélectionner la Langue",
+    "current": "Langue Actuelle"
+  }
+}
+

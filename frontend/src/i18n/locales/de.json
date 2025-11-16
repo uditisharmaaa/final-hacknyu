@@ -1,0 +1,83 @@
+{
+  "header": {
+    "title": "KI-Geschäftsassistent",
+    "subtitle": "Sprach-Rezeptionist und CRM-Dashboard",
+    "live": "Live",
+    "receptionistActive": "Rezeptionist Aktiv"
+  },
+  "tabs": {
+    "dashboard": "Dashboard",
+    "engagement": "Engagement-Agent",
+    "crossReference": "Kreuzreferenz-Agent"
+  },
+  "stats": {
+    "todayBookings": "Heutige Buchungen",
+    "totalRevenue": "Gesamtumsatz",
+    "totalCustomers": "Gesamtkunden",
+    "recentBookings": "Kürzlich (7 Tage)",
+    "totalCalls": "Gesamtanrufe",
+    "appointments": "Termine",
+    "customers": "Kunden",
+    "demand": "Nachfrage",
+    "high": "Hoch"
+  },
+  "dashboard": {
+    "title": "DeskMate KI",
+    "subtitle": "Vollständige Automatisierung für Kleinunternehmer",
+    "getStarted": "Kostenlos Starten",
+    "heroTitle": "Transformieren Sie Ihre Geschäftsabläufe 🚀",
+    "heroSubtitle": "KI-gestützte Anrufbearbeitung, Terminplanung und Kundenverwaltung—alles auf einer Plattform",
+    "automatedCalls": "Automatisierte Anrufe",
+    "smartScheduling": "Intelligente Planung",
+    "crmIntegration": "CRM-Integration",
+    "powerfulFeatures": "Leistungsstarke Funktionen",
+    "readyTransform": "Bereit, Ihr Geschäft zu Transformieren? ✨",
+    "joinHundreds": "Schließen Sie sich Hunderten von Unternehmen an, die ihre Abläufe automatisieren",
+    "startFreeTrial": "Kostenlose Testversion Starten →",
+    "learnMore": "Mehr erfahren"
+  },
+  "features": {
+    "aiCallAssistant": {
+      "title": "KI-Anrufassistent",
+      "description": "Bearbeitet eingehende Anrufe mit natürlicher Sprach-KI von ElevenLabs. Sammelt Informationen und verifiziert E-Mails automatisch."
+    },
+    "smartScheduling": {
+      "title": "Intelligente Planung",
+      "description": "Plant nahtlos Termine in iCal und sendet sofort schöne E-Mail-Bestätigungen."
+    },
+    "crmIntegration": {
+      "title": "CRM-Integration",
+      "description": "Fügt Kunden automatisch zu Supabase mit vollständigen Details, Servicehistorie und Präferenzen hinzu."
+    },
+    "smartFollowups": {
+      "title": "Intelligente Nachverfolgungen",
+      "description": "KI bestimmt den optimalen Nachverfolgungszeitpunkt und sendet automatisch personalisierte Twilio-Erinnerungen."
+    },
+    "dynamicDiscounts": {
+      "title": "Dynamische Rabatte",
+      "description": "Sendet intelligent Rabattcodes während Zeiten geringer Nachfrage, um Buchungen zu maximieren."
+    },
+    "businessInsights": {
+      "title": "Geschäftseinblicke",
+      "description": "Verfolgen Sie Nachfragetrends, Kundenbindung und erhalten Sie KI-gestützte Wachstumsempfehlungen."
+    }
+  },
+  "loading": {
+    "dashboard": "Dashboard wird geladen...",
+    "general": "Wird geladen..."
+  },
+  "errors": {
+    "loadingDashboard": "Fehler beim Laden des Dashboards",
+    "checkConfig": "Bitte überprüfen Sie Ihre Supabase-Konfiguration und stellen Sie sicher, dass die Datenbanktabellen korrekt eingerichtet sind.",
+    "noBusinessFound": "Kein Geschäft Gefunden",
+    "setupBusiness": "Bitte richten Sie ein Geschäft in Ihrer Supabase-Datenbank ein."
+  },
+  "footer": {
+    "text": "KI-Geschäftsassistent • Erstellt mit React, Supabase und OpenRouter"
+  },
+  "language": {
+    "select": "Sprache Wählen",
+    "current": "Aktuelle Sprache"
+  }
+}
+
