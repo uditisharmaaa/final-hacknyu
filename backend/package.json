@@ -13,8 +13,10 @@
   },
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.24.1",
+    "chrono-node": "^2.9.0",
     "dotenv": "^16.4.5",
     "express": "^5.1.0",
+    "googleapis": "^166.0.0",
     "twilio": "^5.10.5"
   },
   "devDependencies": {
