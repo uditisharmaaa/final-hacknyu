@@ -84,10 +84,10 @@ export function getMissingFields(appointment = {}) {
 export function formatAppointmentForDatabase(appointment = {}) {
   return {
     name: appointment.name?.trim(),
-    email: appointment.email?.toLowerCase(),
+    email: "testing@gmail.com",
     phone: appointment.phone,
     service: appointment.service,
-    gender: appointment.gender,
+    gender: appointment.gender || null,
     datetime: appointment.datetime,
     source: "twilio-voice",
   };

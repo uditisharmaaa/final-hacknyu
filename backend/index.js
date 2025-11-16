@@ -5,6 +5,7 @@ import { getStoredAudio, cleanupExpiredAudio } from "./services/elevenlabs.js";
 import { EngagementAgent } from "./services/engagementAgent.js";
 import { CampaignService } from "./services/campaignService.js";
 import { CrossReferenceAgent } from "./services/crossReferenceAgent.js";
+import { sendAppointmentSMS } from "./services/sms.js";
 
 const app = express();
 
@@ -340,6 +341,53 @@ app.get("/audio/:audioId", (req, res) => {
   res.setHeader("Content-Type", storedAudio.mimeType);
   res.setHeader("Cache-Control", "no-store");
   return res.send(storedAudio.buffer);
+});
+
+// TEST ENDPOINT: Send WhatsApp appointment confirmation
+app.post("/test-whatsapp", async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res.status(400).json({
+        error: "Phone number required",
+        example: { phone: "+15551234567" },
+      });
+    }
+
+    // Mock appointment data
+    const mockAppointment = {
+      name: "Test User",
+      email: "test@example.com",
+      service: "haircut",
+      datetime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+      phone: phone,
+    };
+
+    console.log("📱 Testing WhatsApp with appointment:", mockAppointment);
+
+    const result = await sendAppointmentSMS(mockAppointment, phone);
+
+    if (result) {
+      res.json({
+        success: true,
+        message: "WhatsApp sent successfully!",
+        sentTo: process.env.DEMO_WHATSAPP_NUMBER || phone,
+        appointment: mockAppointment,
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Failed to send WhatsApp. Check server logs.",
+      });
+    }
+  } catch (error) {
+    console.error("Test WhatsApp error:", error);
+    res.status(500).json({
+      error: "Failed to send test WhatsApp",
+      message: error.message,
+    });
+  }
 });
 
 // Twilio webhook for incoming calls

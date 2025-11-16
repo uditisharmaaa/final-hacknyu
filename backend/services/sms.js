@@ -114,10 +114,28 @@ export async function sendAppointmentSMS(
     recipientPhone = DEMO_WHATSAPP_NUMBER;
   }
 
+  // Normalize phone number format (ensure it has + and country code)
+  let normalizedPhone = recipientPhone.trim();
+  if (
+    !normalizedPhone.startsWith("+") &&
+    !normalizedPhone.startsWith("whatsapp:")
+  ) {
+    // Remove any non-digit characters
+    const digits = normalizedPhone.replace(/\D/g, "");
+    // Add country code if missing
+    if (digits.startsWith("1") && digits.length === 11) {
+      normalizedPhone = "+" + digits;
+    } else if (digits.length === 10) {
+      normalizedPhone = "+1" + digits;
+    } else {
+      normalizedPhone = "+" + digits;
+    }
+  }
+
   // Format for WhatsApp (add whatsapp: prefix)
-  const whatsappTo = recipientPhone.startsWith("whatsapp:")
-    ? recipientPhone
-    : `whatsapp:${recipientPhone}`;
+  const whatsappTo = normalizedPhone.startsWith("whatsapp:")
+    ? normalizedPhone
+    : `whatsapp:${normalizedPhone}`;
   const whatsappFrom = process.env.TWILIO_PHONE_NUMBER?.startsWith("whatsapp:")
     ? process.env.TWILIO_PHONE_NUMBER
     : `whatsapp:${process.env.TWILIO_PHONE_NUMBER}`;

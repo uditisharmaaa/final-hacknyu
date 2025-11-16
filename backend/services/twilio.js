@@ -18,7 +18,7 @@ export async function handleIncomingCall(req) {
 
   try {
     const greetingText =
-      "Hi, you have come to reach SUNY Hair Studio. I am Luna, the virtual assistant. How can I help you today?";
+      "Hi, you have come to reach Luna Hair Studio. I am Luna, the virtual assistant. How can I help you today?";
     const audioUrl = await generateSpeechUrl(greetingText, resolveBaseUrl(req));
     const gather = twiml.gather({
       input: "speech",
