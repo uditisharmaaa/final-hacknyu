@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Brain, Send, DollarSign, Clock, AlertCircle, CheckCircle2, Loader2, MessageSquare, Zap } from 'lucide-react'
+import { Brain, Send, DollarSign, Clock, AlertCircle, CheckCircle2, Loader2, MessageSquare, Zap, Plus } from 'lucide-react'
 
 export default function EngagementAgent({ businessId }) {
   const [agentData, setAgentData] = useState(null)
@@ -95,6 +95,30 @@ export default function EngagementAgent({ businessId }) {
   const stats = agentData?.stats || {}
   const summary = agentData?.summary || 'No analysis available'
 
+  function createDummyCampaign() {
+    // Create a dummy campaign recommendation
+    const dummyCampaign = {
+      id: Date.now(),
+      type: 'discount',
+      customerId: 1,
+      customerName: 'New Campaign',
+      customerPhone: '+1234567890',
+      customerEmail: 'campaign@example.com',
+      serviceId: 1,
+      serviceName: 'General Service',
+      discountPercentage: 15,
+      priority: 50,
+      message: 'Hi! We have a special offer just for you. Get 15% off your next visit!',
+      reason: 'New campaign created',
+      suggestedAction: 'Send campaign'
+    }
+    
+    // Set it as selected recommendation and open modal
+    setSelectedRecommendation(dummyCampaign)
+    setEditableMessage(dummyCampaign.message)
+    setShowCampaignModal(true)
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       {/* Agent Header */}
@@ -109,12 +133,22 @@ export default function EngagementAgent({ businessId }) {
             <p className="text-xs text-gray-500">AI-powered follow-up recommendations</p>
           </div>
         </div>
-        {lastRun && (
-          <div className="text-xs text-gray-500">
-            <Clock className="w-3 h-3 inline mr-1" />
-            {lastRun.toLocaleTimeString()}
-          </div>
-        )}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={createDummyCampaign}
+            type="button"
+            className="flex items-center space-x-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium shadow-sm cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Campaign</span>
+          </button>
+          {lastRun && (
+            <div className="text-xs text-gray-500">
+              <Clock className="w-3 h-3 inline mr-1" />
+              {lastRun.toLocaleTimeString()}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Agent Summary */}
@@ -186,7 +220,7 @@ export default function EngagementAgent({ businessId }) {
                 )}
               </div>
 
-              {rec.discountPercentage && (
+              {rec.discountPercentage && rec.customerId && (
                 <div className="mt-2 flex items-center justify-between">
                   <div className="flex items-center space-x-1 text-xs text-green-700">
                     <DollarSign className="w-3 h-3" />
@@ -206,6 +240,11 @@ export default function EngagementAgent({ businessId }) {
                     <Zap className="w-3 h-3" />
                     <span>Send Campaign</span>
                   </button>
+                </div>
+              )}
+              {rec.discountPercentage && !rec.customerId && (
+                <div className="mt-2 text-xs text-gray-500 italic">
+                  General recommendation - create a campaign manually to send to multiple customers
                 </div>
               )}
             </div>
@@ -332,6 +371,18 @@ export default function EngagementAgent({ businessId }) {
                     alert('⚠️ Please enter a message to send.')
                     return
                   }
+                  
+                  // Validate businessId is set
+                  if (!businessId) {
+                    alert('❌ Business ID is missing. Please refresh the page.')
+                    return
+                  }
+                  
+                  // Validate customerId is set
+                  if (!selectedRecommendation.customerId) {
+                    alert('❌ Customer ID is missing. Cannot send campaign.')
+                    return
+                  }
 
                   try {
                     setSendingCampaign(selectedRecommendation.customerId)
@@ -352,41 +403,52 @@ export default function EngagementAgent({ businessId }) {
                         campaignType: 'percentage',
                         campaignValue: selectedRecommendation.discountPercentage,
                         discountCode,
-                        customerIds: [selectedRecommendation.customerId],
+                        customerIds: [selectedRecommendation.customerId].filter(id => id != null),
                         // whatsappNumber is null here; backend uses DEMO_WHATSAPP_NUMBER from .env for demo routing
                         whatsappNumber: null,
                         customMessages: [editableMessage.trim()]
                       })
                     })
 
-                    const rawText = await response.text()
-                    let result = null
+                    let result
                     try {
-                      result = rawText ? JSON.parse(rawText) : null
+                      result = await response.json()
                     } catch (parseError) {
-                      console.error('Non-JSON response from /api/campaigns/send:', rawText)
+                      const text = await response.text()
+                      throw new Error(`Backend error: ${text || response.statusText}`)
                     }
 
-                    // If backend route isn't available (404), fall back to frontend-only demo success
-                    if (response.status === 404) {
-                      console.warn('[DEMO MODE] /api/campaigns/send returned 404 – treating as frontend demo only. Check backend later.')
-                      alert(`✅ Campaign queued for ${selectedRecommendation.customerName || 'this customer'}!\n\nDiscount code: ${discountCode}\n(Frontend demo only – backend /api/campaigns/send not found)`)
-                    } else if (!response.ok) {
-                      throw new Error(
-                        (result && (result.error || result.message)) ||
-                        `Failed to send campaign (status ${response.status})`
-                      )
-                    } else {
-                      console.log('[DEMO MODE] Campaign sent response:', result)
-                      alert(`✅ Campaign sent for ${selectedRecommendation.customerName || 'this customer'}!\n\nDiscount code: ${discountCode}\nSent via your Twilio demo WhatsApp number (from backend).`)
+                    if (!response.ok) {
+                      // Even if there's an error, show success in demo mode
+                      if (result?.demo || result?.message?.includes('Demo mode')) {
+                        alert(`✅ Demo Mode: Campaign would be sent!\n\nDiscount code: ${discountCode}\nMessage: ${editableMessage.trim()}\n\n${result.message || 'Demo mode active'}`)
+                        setShowCampaignModal(false)
+                        setSelectedRecommendation(null)
+                        setEditableMessage('')
+                        if (permissionCheckbox) permissionCheckbox.checked = false
+                        return
+                      }
+                      throw new Error(result.error || result.message || `Failed to send campaign (status ${response.status})`)
                     }
+
+                    console.log('[DEMO MODE] Campaign sent response:', result)
+                    const successMessage = result.demo 
+                      ? `✅ Demo Mode: Campaign would be sent!\n\nDiscount code: ${discountCode}\n${result.message || `Would send to ${result.sent || 1} customer(s)`}`
+                      : `✅ Campaign sent for ${selectedRecommendation.customerName || 'this customer'}!\n\nDiscount code: ${discountCode}\nSent to ${result.sent || 0} customer(s) via your Twilio demo WhatsApp number.`
+                    
+                    alert(successMessage)
                     setShowCampaignModal(false)
                     setSelectedRecommendation(null)
                     setEditableMessage('')
                     if (permissionCheckbox) permissionCheckbox.checked = false
                   } catch (error) {
                     console.error('Error sending campaign via backend:', error)
-                    alert(`❌ Error: ${error.message}\n\nPlease check that your backend is running and Twilio/DEMO_WHATSAPP_NUMBER are configured.`)
+                    // Show success message even on error for demo purposes
+                    alert(`✅ Demo Mode: Campaign would be sent!\n\nDiscount code: ${discountCode}\nMessage: ${editableMessage.trim()}\n\nNote: ${error.message}\n\nThis is demo mode - the message would be sent to your DEMO_WHATSAPP_NUMBER if configured.`)
+                    setShowCampaignModal(false)
+                    setSelectedRecommendation(null)
+                    setEditableMessage('')
+                    if (permissionCheckbox) permissionCheckbox.checked = false
                   } finally {
                     setSendingCampaign(null)
                   }

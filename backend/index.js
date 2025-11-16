@@ -2,6 +2,8 @@
 import express from "express";
 import { handleIncomingCall, processSpeech } from "./services/twilio.js";
 import { getStoredAudio, cleanupExpiredAudio } from "./services/elevenlabs.js";
+import { EngagementAgent } from "./services/engagementAgent.js";
+import { CampaignService } from "./services/campaignService.js";
 
 const app = express();
 
@@ -109,9 +111,30 @@ app.post("/api/campaigns/send", async (req, res) => {
   try {
     const { businessId, campaignId, campaignName, campaignType, campaignValue, discountCode, customerIds, whatsappNumber, customMessages } = req.body;
     
-    if (!businessId || !campaignId || !customerIds || !Array.isArray(customerIds) || customerIds.length === 0) {
+    // Log received data for debugging
+    console.log("Received campaign send request:", {
+      businessId,
+      campaignId,
+      customerIds,
+      customerIdsType: Array.isArray(customerIds),
+      customerIdsLength: customerIds?.length
+    });
+    
+    // Validate required fields - allow campaignId to be 0, but not undefined/null
+    if (businessId === undefined || businessId === null || 
+        campaignId === undefined || campaignId === null || 
+        !customerIds || !Array.isArray(customerIds) || customerIds.length === 0) {
       return res.status(400).json({ 
-        error: "Missing required fields: businessId, campaignId, customerIds" 
+        error: "Missing required fields: businessId, campaignId, customerIds",
+        received: { businessId, campaignId, customerIds }
+      });
+    }
+    
+    // Filter out null/undefined customer IDs
+    const validCustomerIds = customerIds.filter(id => id != null && id !== undefined);
+    if (validCustomerIds.length === 0) {
+      return res.status(400).json({ 
+        error: "No valid customer IDs provided. All customer IDs are null or undefined."
       });
     }
 
@@ -122,7 +145,7 @@ app.post("/api/campaigns/send", async (req, res) => {
       campaignType,
       campaignValue,
       discountCode,
-      customerIds,
+      customerIds: validCustomerIds, // Use filtered customer IDs
       whatsappNumber,
       customMessages // Optional: array of custom messages, one per customer
     });
