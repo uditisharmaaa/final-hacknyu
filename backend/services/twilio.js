@@ -1,7 +1,7 @@
 import twilio from "twilio";
 import { generateSpeechUrl } from "./elevenlabs.js";
 import { getOrCreateSession, deleteSession } from "../utils/session.js";
-import { detectIntent, handleIntent } from "../utils/intent.js";
+import { handleAppointmentTurn } from "../utils/intent.js";
 
 const VoiceResponse = twilio.twiml.VoiceResponse;
 
@@ -48,19 +48,9 @@ export async function processSpeech(req) {
   const twiml = new VoiceResponse();
 
   try {
-    let agentMessage;
-    let shouldEndCall = false;
-
-    if (!userSpeech) {
-      agentMessage =
-        "I did not catch that. Could you please repeat your request?";
-    } else {
-      const intent = detectIntent(userSpeech, session);
-      const response = handleIntent(session, intent, userSpeech);
-      agentMessage = response.message;
-      shouldEndCall = response.shouldEndCall ?? false;
-    }
-
+    const response = await handleAppointmentTurn(session, userSpeech);
+    const agentMessage = response.message;
+    const shouldEndCall = response.shouldEndCall ?? false;
     const audioUrl = await generateSpeechUrl(agentMessage, resolveBaseUrl(req));
 
     if (shouldEndCall) {
