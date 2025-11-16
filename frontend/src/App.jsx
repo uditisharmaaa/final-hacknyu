@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { Users, Calendar, DollarSign, Activity, Phone, Building2, ChevronDown } from 'lucide-react'
+import { Users, Calendar, DollarSign, Activity, Phone, Building2, ChevronDown, Brain, Zap } from 'lucide-react'
 import StatCard from './components/StatCard'
 import TodayView from './components/TodayView'
 import CustomersTable from './components/CustomersTable'
 import DemandRevenue from './components/DemandRevenue'
 import AutomationSettings from './components/AutomationSettings'
+import EngagementAgent from './components/EngagementAgent'
 import { useBusiness } from './lib/businessContext.jsx'
 import { getDashboardStats, getBookings, getCustomers, getServices, getAllBusinesses } from './services/dataService'
 
@@ -18,6 +19,7 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showBusinessSelector, setShowBusinessSelector] = useState(false)
+  const [showCampaigns, setShowCampaigns] = useState(false)
   const businessSelectorRef = useRef(null)
 
   // Close business selector when clicking outside
@@ -164,6 +166,13 @@ function App() {
                 <Phone className="w-4 h-4 text-primary-600" />
                 <span>Receptionist Active</span>
               </div>
+              <button
+                onClick={() => setShowCampaigns(true)}
+                className="flex items-center space-x-2 px-3 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm font-medium"
+              >
+                <Zap className="w-4 h-4" />
+                <span>Campaigns</span>
+              </button>
             </div>
           </div>
         </div>
@@ -213,7 +222,7 @@ function App() {
         </div>
 
         {/* Secondary Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Customers Table */}
           <div>
             <CustomersTable customers={customers} bookings={bookings} />
@@ -224,6 +233,34 @@ function App() {
             <DemandRevenue bookings={bookings} stats={stats} />
           </div>
         </div>
+
+        {/* AI Agents Section */}
+        <div className="mb-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Brain className="w-5 h-5 text-primary-600" />
+            <h2 className="text-xl font-bold text-gray-900">AI Agents</h2>
+            <span className="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full">Active</span>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Engagement Agent */}
+            <EngagementAgent businessId={currentBusiness?.id} />
+            
+            {/* Placeholder for future agents */}
+            <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 flex items-center justify-center">
+              <p className="text-sm text-gray-500">More AI agents coming soon...</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Campaigns Section */}
+        {showCampaigns && (
+          <div className="mb-6">
+            <CampaignsManager 
+              businessId={currentBusiness?.id} 
+              onClose={() => setShowCampaigns(false)}
+            />
+          </div>
+        )}
       </main>
 
       {/* Compact Footer */}
